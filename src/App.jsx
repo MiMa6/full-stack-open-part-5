@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
+import BlogForm from './components/BlogForm'
+import LoginForm from './components/LoginForm'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -9,6 +11,9 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [newTitle, setNewTitle] = useState('')
+  const [newAuthor, setNewAuthor] = useState('')
+  const [newUrl, setNewUrl] = useState('')
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -24,6 +29,12 @@ const App = () => {
     }
   }, [])
 
+  const cleanBlogForm = () => {
+    setNewAuthor('')
+    setNewTitle('')
+    setNewUrl('')
+  }
+
   const handleLogin = async (event) => {
     event.preventDefault()
     try {
@@ -34,6 +45,8 @@ const App = () => {
       window.localStorage.setItem(
         'loggedBlogAppUser', JSON.stringify(user)
       )
+
+      blogService.setToken(user.token)
       setUser(user)
       setUsername('')
       setPassword('')
@@ -52,37 +65,33 @@ const App = () => {
     }
   }
 
-  const loginForm = () => {
-    return (
-      <form onSubmit={handleLogin}>
-        <div>
-          username
-          <input
-            type="text"
-            value={username}
-            name="Username"
-            onChange={({ target }) => setUsername(target.value)}
-          />
-        </div>
-        <div>
-          password
-          <input
-            type="password"
-            value={password}
-            name="Password"
-            onChange={({ target }) => setPassword(target.value)}
-          />
-        </div>
-        <button type="submit">login</button>
-      </form>
-    )
+  const addBlog = async (event) => {
+    event.preventDefault()
+    const newBlog = {
+      title: newTitle,
+      author: newAuthor,
+      url: newUrl,
+    }
+    try {
+      blogService.create(newBlog)
+      cleanBlogForm()
+    } catch (exception) {
+      console.log(exception)
+    }
   }
+
 
   if (user === null) {
     return (
       <div>
         <h2>Log in to application</h2>
-        {loginForm()}
+        <LoginForm
+          handleLogin={handleLogin}
+          username={username}
+          password={password}
+          setUsername={setUsername}
+          setPassword={setPassword}
+        />
       </div>
     )
   }
@@ -100,6 +109,19 @@ const App = () => {
 
       <br />
 
+      <div>
+        <h2> create new </h2>
+
+        <BlogForm
+          addBlog={addBlog}
+          newTitle={newTitle}
+          newAuthor={newAuthor}
+          newUrl={newUrl}
+          setNewTitle={setNewTitle}
+          setNewAuthor={setNewAuthor}
+          setNewUrl={setNewUrl}
+        />
+      </div>
       <div>
         {blogs.map(blog =>
           <Blog key={blog.id} blog={blog} />
