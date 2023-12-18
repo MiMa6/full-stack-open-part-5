@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
+import Notification from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -14,6 +15,7 @@ const App = () => {
   const [newTitle, setNewTitle] = useState('')
   const [newAuthor, setNewAuthor] = useState('')
   const [newUrl, setNewUrl] = useState('')
+  const [info, setInfo] = useState({ message: null })
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -28,6 +30,16 @@ const App = () => {
       setUser(user)
     }
   }, [])
+
+  const notifyWith = (message, type = 'info') => {
+    setInfo({
+      message, type
+    })
+
+    setTimeout(() => {
+      setInfo({ message: null })
+    }, 3500)
+  }
 
   const cleanBlogForm = () => {
     setNewAuthor('')
@@ -51,10 +63,7 @@ const App = () => {
       setUsername('')
       setPassword('')
     } catch (exception) {
-      setErrorMessage('wrong credentials')
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
+      notifyWith('wrong username or password', 'error')
     }
   }
 
@@ -73,10 +82,18 @@ const App = () => {
       url: newUrl,
     }
     try {
-      blogService.create(newBlog)
+      const createdBlog = await blogService.create(newBlog)
+      setBlogs(blogs.concat(createdBlog))
+      notifyWith(`a new blog ${createdBlog.title} by ${createdBlog.author} added`, 'info')
       cleanBlogForm()
     } catch (exception) {
       console.log(exception)
+      const responseErrorMessage = exception.response.data.error
+      if (responseErrorMessage.includes('Blog validation failed')) {
+        notifyWith('title and author required', 'error')
+      } else {
+        notifyWith(responseErrorMessage, 'error')
+      }
     }
   }
 
@@ -85,6 +102,9 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
+
+        <Notification info={info} />
+
         <LoginForm
           handleLogin={handleLogin}
           username={username}
@@ -100,6 +120,8 @@ const App = () => {
     <div>
       <h2>blogs</h2>
 
+      <Notification info={info} />
+
       <div>
         {user.name} logged in
         <button onClick={handleLogout}>
@@ -111,7 +133,7 @@ const App = () => {
 
       <div>
         <h2> create new </h2>
-
+        
         <BlogForm
           addBlog={addBlog}
           newTitle={newTitle}
