@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
+import Togglable from './components/Togglable'
 import Notification from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -12,22 +13,22 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
   const [info, setInfo] = useState({ message: null })
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
+    const fetchBlogs = async () => {
+      const blogs = await blogService.getAll()
       setBlogs(blogs)
-    )
-  }, [])
+    }
+    fetchBlogs()
+  }, [blogs.length])
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
+      blogService.setToken(user.token)
     }
   }, [])
 
@@ -39,12 +40,6 @@ const App = () => {
     setTimeout(() => {
       setInfo({ message: null })
     }, 3500)
-  }
-
-  const cleanBlogForm = () => {
-    setNewAuthor('')
-    setNewTitle('')
-    setNewUrl('')
   }
 
   const handleLogin = async (event) => {
@@ -74,29 +69,68 @@ const App = () => {
     }
   }
 
-  const addBlog = async (event) => {
-    event.preventDefault()
-    const newBlog = {
-      title: newTitle,
-      author: newAuthor,
-      url: newUrl,
-    }
+  const createBlog = async (blogObject) => {
     try {
-      const createdBlog = await blogService.create(newBlog)
+      const createdBlog = await blogService.create(blogObject)
+
       setBlogs(blogs.concat(createdBlog))
       notifyWith(`a new blog ${createdBlog.title} by ${createdBlog.author} added`, 'info')
-      cleanBlogForm()
+      blogFormRef.current.toggleVisibility()
+
     } catch (exception) {
       console.log(exception)
       const responseErrorMessage = exception.response.data.error
       if (responseErrorMessage.includes('Blog validation failed')) {
-        notifyWith('title and author required', 'error')
+        notifyWith('title and url required', 'error')
       } else {
         notifyWith(responseErrorMessage, 'error')
       }
     }
   }
 
+  const increaseLikes = async (id) => {
+
+    const blog = blogs.find(blog => blog.id === id)
+    const changedBlog = { ...blog, likes: blog.likes + 1, user: user.id }
+
+    try {
+      const updatedBlog = await blogService.update(id, changedBlog)
+      const updatedBlogWithUserInfo = { ...updatedBlog, user: blog.user }
+      setBlogs(blogs.map(blog => blog.id !== id ? blog : updatedBlogWithUserInfo))
+    } catch (exception) {
+      console.log(exception)
+      notifyWith('Updating likes failed', 'error')
+    }
+  }
+
+  const deleteBlog = async (id) => {
+    const blog = blogs.find(blog => blog.id === id)
+
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+      try {
+        await blogService.del(id)
+        setBlogs(blogs.filter(blog => blog.id !== id))
+        notifyWith(`Blog ${blog.title} by ${blog.author} deleted`, 'info')
+      } catch (exception) {
+        console.log(exception)
+        if (exception.response.status === 401) {
+          notifyWith('Only blog creator can delete blog', 'error')
+        } else {
+          notifyWith('Removing blog failed', 'error')
+        }
+      }
+    }
+  }
+
+  const blogFormRef = useRef()
+
+  const blogForm = () => {
+    return (
+      <Togglable openButtonLabel="new blog" closeButtonLabel="cancel" ref={blogFormRef}>
+        <BlogForm createBlog={createBlog} />
+      </Togglable>
+    )
+  }
 
   if (user === null) {
     return (
@@ -116,6 +150,8 @@ const App = () => {
     )
   }
 
+  const blogsSortedDesc = blogs.sort((a, b) => b.likes - a.likes)
+
   return (
     <div>
       <h2>blogs</h2>
@@ -133,20 +169,16 @@ const App = () => {
 
       <div>
         <h2> create new </h2>
-        
-        <BlogForm
-          addBlog={addBlog}
-          newTitle={newTitle}
-          newAuthor={newAuthor}
-          newUrl={newUrl}
-          setNewTitle={setNewTitle}
-          setNewAuthor={setNewAuthor}
-          setNewUrl={setNewUrl}
-        />
+        {blogForm()}
       </div>
       <div>
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
+        {blogsSortedDesc.map(blog =>
+          <Blog
+            key={blog.id}
+            blog={blog}
+            increaseLikes={increaseLikes}
+            deleteBlog={deleteBlog}
+          />
         )}
       </div>
 
