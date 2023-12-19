@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './styles.css'
 
-const Blog = ({ blog, increaseLikes, deleteBlog}) => {
+const Blog = ({ blog, increaseLikes, deleteBlog }) => {
   const [visible, setVisible] = useState(false)
 
   const hideWhenVisible = { display: visible ? 'none' : '' }

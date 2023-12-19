@@ -30,7 +30,7 @@ const del = (id) => {
     headers: { Authorization: token },
   }
   const request = axios.delete(`${baseUrl}/${id}`, config)
-  return request.then(response => response.data) 
+  return request.then(response => response.data)
 }
 
-export default { getAll, create, setToken, update, del}
+export default { getAll, create, setToken, update, del }
