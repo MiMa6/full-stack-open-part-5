@@ -30,7 +30,7 @@ const Blog = ({ blog }) => {
         {blog.url} <br />
         likes: {blog.likes}
         <button type="submit"> like </button> <br />
-        {blog.author} <br />
+        {blog.user.name} <br />
       </div>
     </div>
   )

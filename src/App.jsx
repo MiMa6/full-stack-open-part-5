@@ -16,10 +16,12 @@ const App = () => {
   const [info, setInfo] = useState({ message: null })
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
+    const fetchBlogs = async () => {
+      const blogs = await blogService.getAll()
       setBlogs(blogs)
-    )
-  }, [])
+    }
+    fetchBlogs()
+  }, [blogs.length])
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
@@ -69,6 +71,7 @@ const App = () => {
   const createBlog = async (blogObject) => {
     try {
       const createdBlog = await blogService.create(blogObject)
+
       setBlogs(blogs.concat(createdBlog))
       notifyWith(`a new blog ${createdBlog.title} by ${createdBlog.author} added`, 'info')
       blogFormRef.current.toggleVisibility()
