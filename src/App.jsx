@@ -94,11 +94,31 @@ const App = () => {
 
     try {
       const updatedBlog = await blogService.update(id, changedBlog)
-      const updatedBlogWithUserInfo =  { ...updatedBlog, user: blog.user }
+      const updatedBlogWithUserInfo = { ...updatedBlog, user: blog.user }
       setBlogs(blogs.map(blog => blog.id !== id ? blog : updatedBlogWithUserInfo))
     } catch (exception) {
       console.log(exception)
       notifyWith('Updating likes failed', 'error')
+    }
+  }
+
+  const deleteBlog = async (id) => {
+    const blog = blogs.find(blog => blog.id === id)
+
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+      try {
+        await blogService.del(id)
+        setBlogs(blogs.filter(blog => blog.id !== id))
+        notifyWith(`Blog ${blog.title} by ${blog.author} deleted`, 'info')
+      } catch (exception) {
+        console.log(exception)
+        const responseErrorMessage = exception.response.data.error
+        if (responseErrorMessage.includes('jwt must be provided')) {
+          notifyWith('User can only delete own blogs ', 'error')
+        } else {
+          notifyWith('Removing blog failed', 'error')
+        }
+      }
     }
   }
 
@@ -157,6 +177,7 @@ const App = () => {
             key={blog.id}
             blog={blog}
             increaseLikes={increaseLikes}
+            deleteBlog={deleteBlog}
           />
         )}
       </div>
