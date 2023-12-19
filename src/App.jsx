@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
@@ -13,9 +13,6 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
   const [info, setInfo] = useState({ message: null })
 
   useEffect(() => {
@@ -40,12 +37,6 @@ const App = () => {
     setTimeout(() => {
       setInfo({ message: null })
     }, 3500)
-  }
-
-  const cleanBlogForm = () => {
-    setNewAuthor('')
-    setNewTitle('')
-    setNewUrl('')
   }
 
   const handleLogin = async (event) => {
@@ -75,29 +66,33 @@ const App = () => {
     }
   }
 
-  const addBlog = async (event) => {
-    event.preventDefault()
-    const newBlog = {
-      title: newTitle,
-      author: newAuthor,
-      url: newUrl,
-    }
+  const createBlog = async (blogObject) => {
     try {
-      const createdBlog = await blogService.create(newBlog)
+      const createdBlog = await blogService.create(blogObject)
       setBlogs(blogs.concat(createdBlog))
       notifyWith(`a new blog ${createdBlog.title} by ${createdBlog.author} added`, 'info')
-      cleanBlogForm()
+      blogFormRef.current.toggleVisibility()
+
     } catch (exception) {
       console.log(exception)
       const responseErrorMessage = exception.response.data.error
       if (responseErrorMessage.includes('Blog validation failed')) {
-        notifyWith('title and author required', 'error')
+        notifyWith('title and url required', 'error')
       } else {
         notifyWith(responseErrorMessage, 'error')
       }
     }
   }
 
+  const blogFormRef = useRef()
+
+  const blogForm = () => {
+    return (
+    <Togglable buttonLabel="new blog" ref={blogFormRef}>
+      <BlogForm createBlog={createBlog} />
+    </Togglable>
+    )
+  }
 
   if (user === null) {
     return (
@@ -134,18 +129,7 @@ const App = () => {
 
       <div>
         <h2> create new </h2>
-
-        <Togglable buttonLabel="new blog">
-          <BlogForm
-            addBlog={addBlog}
-            newTitle={newTitle}
-            newAuthor={newAuthor}
-            newUrl={newUrl}
-            setNewTitle={setNewTitle}
-            setNewAuthor={setNewAuthor}
-            setNewUrl={setNewUrl}
-          />
-        </Togglable>
+        {blogForm()}
       </div>
       <div>
         {blogs.map(blog =>
