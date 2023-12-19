@@ -28,6 +28,7 @@ const App = () => {
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
+      blogService.setToken(user.token)
     }
   }, [])
 
@@ -112,9 +113,8 @@ const App = () => {
         notifyWith(`Blog ${blog.title} by ${blog.author} deleted`, 'info')
       } catch (exception) {
         console.log(exception)
-        const responseErrorMessage = exception.response.data.error
-        if (responseErrorMessage.includes('jwt must be provided')) {
-          notifyWith('User can only delete own blogs ', 'error')
+        if (exception.response.status === 401) {
+          notifyWith('Only blog creator can delete blog', 'error')
         } else {
           notifyWith('Removing blog failed', 'error')
         }
