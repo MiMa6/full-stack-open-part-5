@@ -20,17 +20,17 @@ const Blog = ({ blog, increaseLikes, deleteBlog }) => {
   }
 
   return (
-    <div style={blogStyle}>
-      <div style={hideWhenVisible}>
+    <div style={blogStyle} className='blog'>
+      <div style={hideWhenVisible} className="hideWhenVisible" >
         {blog.title} {blog.author}
         <button onClick={toggleVisibility}>view</button>
       </div>
-      <div style={showWhenVisible}>
+      <div style={showWhenVisible} className="showWhenVisible">
         {blog.title} {blog.author}
         <button onClick={toggleVisibility}>hide</button> <br />
         {blog.url} <br />
         likes: {blog.likes}
-        <button onClick={() => increaseLikes(blog.id)} type="submit"> like </button> <br />
+        <button onClick={() => increaseLikes(blog.id)} type="submit">like</button> <br />
         {blog.user.name} <br />
         <button className="blue-button" onClick={() => deleteBlog(blog.id)} type="submit"> remove </button> <br />
       </div>
