@@ -2,6 +2,7 @@ import React from 'react'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import Blog from './Blog'
+import userEvent from '@testing-library/user-event'
 
 
 describe('<Blog />', () => {
@@ -37,4 +38,20 @@ describe('<Blog />', () => {
     )
     expect(div).toHaveStyle('display: none')
   })
+
+  test('Url and likes are displayed when button clicked', async () => {
+    const user = userEvent.setup()
+    const button = screen.getByText('view')
+    await user.click(button)
+
+    const div = container.querySelector('.showWhenVisible')
+    expect(div).toHaveTextContent(
+      'www.foodblog.com'
+    )
+    expect(div).toHaveTextContent(
+      '1'
+    )
+    expect(div).not.toHaveStyle('display: none')
+  })
+
 })
