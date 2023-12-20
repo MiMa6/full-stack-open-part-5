@@ -17,11 +17,8 @@ describe('<Blog />', () => {
     }
   }
 
-  beforeEach(() => {
-    container = render(<Blog blog={blog} />).container
-  })
-
   test('Blog name and author displayed at start', () => {
+    container = render(<Blog blog={blog} />).container
     const div = container.querySelector('.hideWhenVisible')
     expect(div).toHaveTextContent(
       'Food Blog Jake Cake'
@@ -29,6 +26,7 @@ describe('<Blog />', () => {
   })
 
   test('Url and likes not displayed at start', () => {
+    container = render(<Blog blog={blog} />).container
     const div = container.querySelector('.showWhenVisible')
     expect(div).toHaveTextContent(
       'www.foodblog.com'
@@ -40,6 +38,7 @@ describe('<Blog />', () => {
   })
 
   test('Url and likes are displayed when button clicked', async () => {
+    container = render(<Blog blog={blog} />).container
     const user = userEvent.setup()
     const button = screen.getByText('view')
     await user.click(button)
@@ -54,4 +53,18 @@ describe('<Blog />', () => {
     expect(div).not.toHaveStyle('display: none')
   })
 
+  test('Like button cliked twice', async () => {
+
+    const user = userEvent.setup()
+    const mockincreaseLikes = jest.fn()
+
+    render(<Blog blog={blog} increaseLikes={mockincreaseLikes} />)
+
+    const button = screen.getByText('like')
+    await user.click(button)
+    await user.click(button)
+
+    expect(mockincreaseLikes.mock.calls).toHaveLength(2)
+  })
 })
+

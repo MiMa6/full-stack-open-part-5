@@ -30,7 +30,7 @@ const Blog = ({ blog, increaseLikes, deleteBlog }) => {
         <button onClick={toggleVisibility}>hide</button> <br />
         {blog.url} <br />
         likes: {blog.likes}
-        <button onClick={() => increaseLikes(blog.id)} type="submit"> like </button> <br />
+        <button onClick={() => increaseLikes(blog.id)} type="submit">like</button> <br />
         {blog.user.name} <br />
         <button className="blue-button" onClick={() => deleteBlog(blog.id)} type="submit"> remove </button> <br />
       </div>
