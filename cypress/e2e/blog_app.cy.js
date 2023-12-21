@@ -61,32 +61,41 @@ describe('Blog app', function () {
     })
 
   })
-  describe('When logged in and blog created', function () {
+  describe('When logged in and test blogs created', function () {
     beforeEach(function () {
       // login
       cy.get('#username').type('TaTe')
       cy.get('#password').type('salainenSana')
       cy.get('#login-button').click()
-      // creat blog
-      cy.contains('new blog').click()
+      // creat blog 1
+      cy.get('#new-blog').click()
       cy.get('#title-form').type('Test Blog')
       cy.get('#author-form').type('Tuulia Tullinen')
       cy.get('#url-form').type('www.TuulianTulliBlogi.com')
       cy.get('#create-button').click()
+      cy.wait(500)
+      // creat blog 2
+      cy.get('#new-blog').click()
+      cy.get('#title-form').type('Blog Test')
+      cy.get('#author-form').type('Jehu Jokunen')
+      cy.get('#url-form').type('www.jehunjokijuoma.com')
+      cy.get('#create-button').click()
     })
     it('User can like a blog', function () {
-      cy.get('.blog')
+      cy.get('#test-blog')
         .contains('Test Blog Tuulia Tullinen')
         .contains('view').click()
-      cy.contains('like').click()
-      cy.contains('likes: 1')
+      cy.get('#test-blog')
+        .contains('like').click()
+      cy.get('#test-blog')
+        .contains('likes: 1')
     })
     it('User who created blog can delete it', function () {
-      cy.get('.blog')
+      cy.get('#test-blog')
         .contains('Test Blog Tuulia Tullinen')
         .contains('view').click()
       cy.contains('remove').click()
-      cy.get('.blog')
+      cy.get('#test-blog')
         .should('not.exist')
     })
     it('Only user who created blog can see delete button', function () {
@@ -94,10 +103,27 @@ describe('Blog app', function () {
       cy.get('#username').type('JuuJo')
       cy.get('#password').type('SalsaSalaan')
       cy.get('#login-button').click()
-      cy.get('.blog')
+      cy.get('#test-blog')
         .contains('Test Blog Tuulia Tullinen')
         .contains('view').click()
       cy.contains('remove').should('not.exist')
+    })
+    it('Blogs are ordered according to likes (descending)', function () {
+      cy.get('#test-blog')
+        .contains('Test Blog Tuulia Tullinen')
+        .contains('view').click()
+      cy.get('#test-blog')
+        .contains('like').click()
+      cy.get('#blog-test')
+        .contains('Blog Test Jehu Jokunen')
+        .contains('view').click()
+      cy.get('#blog-test')
+        .contains('like').click()
+        .contains('like').click()
+        .contains('like').click()
+
+      cy.get('.blog').eq(0).should('contain', 'Blog Test Jehu Jokunen')
+      cy.get('.blog').eq(1).should('contain', 'Test Blog Tuulia Tullinen')
     })
   })
 })

@@ -19,8 +19,10 @@ const Blog = ({ blog, increaseLikes, deleteBlog, user }) => {
     marginBottom: 5
   }
 
+  const blogId = blog.title.split(' ').join('-').toLowerCase()
+
   return (
-    <div style={blogStyle} className='blog'>
+    <div id={blogId} style={blogStyle} className='blog'>
       <div style={hideWhenVisible} className="hideWhenVisible" >
         {blog.title} {blog.author}
         <button onClick={toggleVisibility}>view</button>
