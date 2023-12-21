@@ -53,5 +53,27 @@ describe('Blog app', function () {
       // List of blog
       cy.get('.blog').contains('Test Blog Tuulia Tullinen')
     })
+
+  })
+  describe('When logged in and blog created', function () {
+    beforeEach(function () {
+      // login
+      cy.get('#username').type('TaTe')
+      cy.get('#password').type('salainenSana')
+      cy.get('#login-button').click()
+      // creat blog
+      cy.contains('new blog').click()
+      cy.get('#title-form').type('Test Blog')
+      cy.get('#author-form').type('Tuulia Tullinen')
+      cy.get('#url-form').type('www.TuulianTulliBlogi.com')
+      cy.get('#create-button').click()
+    })
+    it('User can like a blog', function () {
+      cy.get('.blog')
+        .contains('Test Blog Tuulia Tullinen')
+        .contains('view').click()
+      cy.contains('like').click()
+      cy.contains('likes: 1')
+    })
   })
 })
