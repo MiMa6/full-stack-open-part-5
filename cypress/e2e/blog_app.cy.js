@@ -1,12 +1,18 @@
 describe('Blog app', function () {
   beforeEach(function () {
-    const user = {
+    const userOne = {
       name: 'Tatu Testaaja',
       username: 'TaTe',
       password: 'salainenSana'
     }
+    const userTwo = {
+      name: 'Jussi Journalisti',
+      username: 'JuuJo',
+      password: 'SalsaSalaan'
+    }
     cy.request('POST', `${Cypress.env('BACKEND')}/testing/reset`)
-    cy.request('POST', `${Cypress.env('BACKEND')}/users`, user)
+    cy.request('POST', `${Cypress.env('BACKEND')}/users`, userOne)
+    cy.request('POST', `${Cypress.env('BACKEND')}/users`, userTwo)
     cy.visit('http://localhost:5173')
   })
 
@@ -82,6 +88,16 @@ describe('Blog app', function () {
       cy.contains('remove').click()
       cy.get('.blog')
         .should('not.exist')
+    })
+    it('Only user who created blog can see delete button', function () {
+      cy.contains('logout').click()
+      cy.get('#username').type('JuuJo')
+      cy.get('#password').type('SalsaSalaan')
+      cy.get('#login-button').click()
+      cy.get('.blog')
+        .contains('Test Blog Tuulia Tullinen')
+        .contains('view').click()
+      cy.contains('remove').should('not.exist')
     })
   })
 })

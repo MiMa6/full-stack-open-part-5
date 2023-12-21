@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './styles.css'
 
-const Blog = ({ blog, increaseLikes, deleteBlog }) => {
+const Blog = ({ blog, increaseLikes, deleteBlog, user }) => {
   const [visible, setVisible] = useState(false)
 
   const hideWhenVisible = { display: visible ? 'none' : '' }
@@ -32,7 +32,9 @@ const Blog = ({ blog, increaseLikes, deleteBlog }) => {
         likes: {blog.likes}
         <button onClick={() => increaseLikes(blog.id)} type="submit">like</button> <br />
         {blog.user.name} <br />
-        <button className="blue-button" onClick={() => deleteBlog(blog.id)} type="submit"> remove </button> <br />
+        {blog.user.name === user.name && (
+          <button className="blue-button" onClick={() => deleteBlog(blog.id)} type="submit"> remove </button>
+        )}
       </div>
     </div>
   )
