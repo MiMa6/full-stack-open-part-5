@@ -75,5 +75,13 @@ describe('Blog app', function () {
       cy.contains('like').click()
       cy.contains('likes: 1')
     })
+    it('User who created blog can delete it', function () {
+      cy.get('.blog')
+        .contains('Test Blog Tuulia Tullinen')
+        .contains('view').click()
+      cy.contains('remove').click()
+      cy.get('.blog')
+        .should('not.exist')
+    })
   })
 })
