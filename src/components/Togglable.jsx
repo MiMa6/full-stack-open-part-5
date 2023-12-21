@@ -15,15 +15,17 @@ const Togglable = forwardRef((props, refs) => {
       toggleVisibility
     }
   })
+  const openButtonLabel = props.openButtonLabel
+  const openButtonId = openButtonLabel.split(' ').join('-').toLowerCase()
 
   return (
     <div>
       <div style={hideWhenVisible}>
-        <button onClick={toggleVisibility}>{props.openButtonLabel}</button>
+        <button id={openButtonId} onClick={toggleVisibility}>{props.openButtonLabel}</button>
       </div>
       <div style={showWhenVisible}>
         {props.children}
-        <button onClick={toggleVisibility}>{props.closeButtonLabel}</button>
+        <button id={props.openButtonLabel} onClick={toggleVisibility}>{props.closeButtonLabel}</button>
       </div>
     </div>
   )
